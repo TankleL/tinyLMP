@@ -72,7 +72,7 @@ int main()
 
 	using namespace tinylmp;
 
-	std::string test_ct = "abcffdd";
+	std::string test_ct = "aaa<bbb/>ccc<ddd>eee</ddd>";
 	Document doc;
 	bool res = Parser::parse(doc, test_ct);
 	return 0;

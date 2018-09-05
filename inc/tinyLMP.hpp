@@ -76,6 +76,11 @@ namespace tinylmp
 
 	namespace _internal_ns
 	{
+		inline bool is_ascii(char ch)
+		{
+			return ((unsigned char)ch) <= 0x7f;
+		}
+
 		/************************************************************************/
 		/*                             PARSE-EVENT                              */
 		/************************************************************************/
@@ -158,7 +163,8 @@ namespace tinylmp
 
 			void react(PrsEvent const &ev) override
 			{
-				if ((ev.ch >= 'a' && ev.ch <= 'z') ||
+				if (!is_ascii(ev.ch) ||
+					(ev.ch >= 'a' && ev.ch <= 'z') ||
 					(ev.ch >= 'A' && ev.ch <= 'Z') ||
 					ev.ch == '-' ||
 					ev.ch == '_')
@@ -212,7 +218,8 @@ namespace tinylmp
 
 			void react(PrsEvent const &ev) override
 			{
-				if ((ev.ch >= 'a' && ev.ch <= 'z') ||
+				if (!is_ascii(ev.ch) ||
+					(ev.ch >= 'a' && ev.ch <= 'z') ||
 					(ev.ch >= 'A' && ev.ch <= 'Z') ||
 					ev.ch == '-' ||
 					ev.ch == '_')
@@ -295,7 +302,8 @@ namespace tinylmp
 				ParseState::dispatch(PrsEvent(ch));
 			}
 
-			if (ParseState::is_in_state<_internal_ns::PS_Text>())
+			if (ParseState::is_in_state<_internal_ns::PS_Text>() &&
+				gtext().length() > 0)
 			{
 				Node nd;
 				nd.m_text = gtext();
