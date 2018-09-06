@@ -200,6 +200,9 @@ namespace tinylmp
 			}
 		};
 
+		/************************************************************************/
+		/*                           PS-NDBODYWAITCLOSE                         */
+		/************************************************************************/
 		class PS_NDBodyWaitClose : public ParseState
 		{
 		public:
@@ -219,6 +222,9 @@ namespace tinylmp
 			}
 		};
 
+		/************************************************************************/
+		/*                          PS-NDBODYREMOTECLOSE                        */
+		/************************************************************************/
 		class PS_NDBodyRemoteClose : public ParseState
 		{
 		public:
@@ -257,6 +263,9 @@ namespace tinylmp
 			std::string m_name_chk;
 		};
 
+		/************************************************************************/
+		/*                       PS-NDBODYREMOTEWAITCLOSE                       */
+		/************************************************************************/
 		class PS_NDBodyRemoteWaitClose : public ParseState
 		{
 		public:
@@ -274,6 +283,9 @@ namespace tinylmp
 			}
 		};
 
+		/************************************************************************/
+		/*                              PS-NDBODYTEXT                           */
+		/************************************************************************/
 		class PS_NDBodyText : public ParseState
 		{
 		public:
