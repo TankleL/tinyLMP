@@ -70,6 +70,17 @@ namespace tinylmp
 			m_nodes.push_back(node);
 		}
 
+		const Node& node_at(
+			size_t index) const
+		{
+			return m_nodes.at(index);
+		}
+
+		size_t node_count() const
+		{
+			return m_nodes.size();
+		}
+
 	protected:
 		std::vector<Node>		m_nodes;
 	};

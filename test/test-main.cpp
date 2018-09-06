@@ -2,78 +2,41 @@
 #include <tinyfsm.hpp>
 #include <iostream>
 
-// ----------------------------------------------------------------------------
-// 1. Event Declarations
-//
-struct Toggle : tinyfsm::Event { };
-
-
-// ----------------------------------------------------------------------------
-// 2. State Machine Base Class Declaration
-//
-struct Switch : tinyfsm::MealyMachine<Switch>
-{
-	/* pure virtual reaction (override required in all states) */
-	virtual void react(Toggle const &) = 0;
-
-	/* transition actions */
-	static void OpenCircuit() {
-		std::cout << "* Opening ciruit (light goes OFF)" << std::endl;
-	}
-	static void CloseCircuit() {
-		std::cout << "* Closing ciruit (light goes ON)" << std::endl;
-	}
-};
-
-
-// ----------------------------------------------------------------------------
-// 3. State Declarations
-//
-struct Off; // forward declaration
-
-struct On : Switch
-{
-	void react(Toggle const &) override { transit<Off>(OpenCircuit); };
-};
-
-struct Off : Switch
-{
-	void react(Toggle const &) override { transit<On>(CloseCircuit); };
-};
-
-
 FSM_INITIAL_STATE(tinylmp::_internal_ns::ParseState, tinylmp::_internal_ns::PS_Text)
 
-// ----------------------------------------------------------------------------
-// Main
-//
+void dump_doc(const tinylmp::Document& doc)
+{
+	using namespace std;
+	using namespace tinylmp;
+
+	cout << "=---------------- dump doc ----------------=" << endl;
+	cout << "node count = " << doc.node_count() << endl;
+	for(size_t i = 0; i < doc.node_count(); ++i)
+	{
+		Node nd = doc.node_at(i);
+		cout << "[node " << i << " | name = "
+			<< nd.m_name << "| text = "
+			<< nd.m_text << "]" << endl;
+	}
+}
+
 int main()
 {
-// 	Switch::start();
-// 
-// 	std::cout << "> You are facing a light switch..." << std::endl;
-// 	while (1)
-// 	{
-// 		char c;
-// 		std::cout << std::endl << "t=Toggle, q=Quit ? ";
-// 		std::cin >> c;
-// 		switch (c) {
-// 		case 't':
-// 			std::cout << "> Toggling switch..." << std::endl;
-// 			Switch::dispatch(Toggle());
-// 			break;
-// 		case 'q':
-// 			return 0;
-// 		default:
-// 			std::cout << "> Invalid input" << std::endl;
-// 		};
-// 	}
-
-
 	using namespace tinylmp;
 
 	std::string test_ct = "aaa<bbb/>ccc<ddd>eee</ddd>";
 	Document doc;
+
+	std::cout << "src content : " << test_ct << std::endl;
 	bool res = Parser::parse(doc, test_ct);
+	if(res)
+	{
+		dump_doc(doc);
+	}
+	else
+	{
+		std::cout << "parse failed." << std::endl;	
+	}
+	
 	return 0;
 }
