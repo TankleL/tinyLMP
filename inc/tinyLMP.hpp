@@ -92,6 +92,20 @@ namespace tinylmp
 			return ((unsigned char)ch) <= 0x7f;
 		}
 
+		static bool is_legal_nd_name_ch(char ch, bool first_ch)
+		{
+			if (!is_ascii(ch) ||
+				(ch >= 'a' && ch <= 'z') ||
+				(ch >= 'A' && ch <= 'Z') ||
+				ch == '-' ||
+				ch == '_' ||
+				(!first_ch && (ch >= '0' && ch <= '9')))
+			{
+				return true;
+			}
+			return false;
+		}
+
 		/************************************************************************/
 		/*                             PARSE-EVENT                              */
 		/************************************************************************/
@@ -119,6 +133,7 @@ namespace tinylmp
 		protected:
 #define _DECL_PS_STATIC_MEMBER(_type, _name)	_type& _name()
 			_DECL_PS_STATIC_MEMBER(std::string, gtext);
+			_DECL_PS_STATIC_MEMBER(std::string, gndattname);
 			_DECL_PS_STATIC_MEMBER(Document, gdoc);
 			_DECL_PS_STATIC_MEMBER(Node, gndbody);
 #undef _DECL_PS_STATIC_MEMBER
@@ -164,7 +179,8 @@ namespace tinylmp
 		/************************************************************************/
 		class PS_NDBodyText;
 		class PS_NDBodyWaitClose;
-		class PS_NDBody : public ParseState
+		class PS_NDAttrName;
+		class PS_NDBodyName : public ParseState
 		{
 		public:
 			void entry() override
@@ -174,14 +190,15 @@ namespace tinylmp
 
 			void react(PrsEvent const &ev) override
 			{
-				if (!is_ascii(ev.ch) ||
-					(ev.ch >= 'a' && ev.ch <= 'z') ||
-					(ev.ch >= 'A' && ev.ch <= 'Z') ||
-					ev.ch == '-' ||
-					ev.ch == '_')
+				gtext().push_back(ev.ch);
+
+				if(is_legal_nd_name_ch(ev.ch, gndbody().m_name.empty()))
 				{
-					gtext().push_back(ev.ch);
 					gndbody().m_name.push_back(ev.ch);
+				}
+				else if (ev.ch == ' ')
+				{
+					transit<PS_NDAttrName>();
 				}
 				else if(ev.ch == '/')
 				{
@@ -194,9 +211,57 @@ namespace tinylmp
 				else
 				{ // bad syntax
 					gndbody().reset();
-
 					transit<PS_Text>();
 				}
+			}
+		};
+
+		class PS_NDAttrValue : public ParseState
+		{
+		public:
+			void entry() override
+			{
+				reset();
+			}
+
+			void react(PrsEvent const &ev) override
+			{
+				gtext().push_back(ev.ch);
+
+				if (!m_value.empty() &&
+					m_started &&
+					ev.ch != '\"')
+				{
+					m_value.push_back(ev.ch);
+				}
+				else if (!m_started &&
+					ev.ch == '\"')
+				{
+					m_started = true;
+				}
+				else if (m_started &&
+					ev.ch == '\"')
+				{
+				}
+			}
+
+		protected:
+			void reset()
+			{
+				m_started = false;
+				m_value.clear();
+			}
+
+			std::string m_value;
+			bool		m_started;
+		};
+
+		class PS_NDAttrName : public ParseState
+		{
+		public:
+			void react(PrsEvent const &ev) override
+			{
+				
 			}
 		};
 
@@ -235,11 +300,7 @@ namespace tinylmp
 
 			void react(PrsEvent const &ev) override
 			{
-				if (!is_ascii(ev.ch) ||
-					(ev.ch >= 'a' && ev.ch <= 'z') ||
-					(ev.ch >= 'A' && ev.ch <= 'Z') ||
-					ev.ch == '-' ||
-					ev.ch == '_')
+				if(is_legal_nd_name_ch(ev.ch, m_name_chk.empty()))
 				{
 					m_name_chk.push_back(ev.ch);
 				}
@@ -341,6 +402,7 @@ namespace tinylmp
 	protected:
 #define _STATIC_MEMBER(_type, _name)	static _type& _name(){static _type _inst_; return _inst_;}
 		_STATIC_MEMBER(std::string, gtext);
+		_STATIC_MEMBER(std::string, gndattname);
 		_STATIC_MEMBER(Document, gdoc);
 		_STATIC_MEMBER(Node, gndbody);
 #undef  _STATIC_MEMBER
@@ -359,6 +421,7 @@ namespace tinylmp
 	/************************************************************************/
 #define _IMPL_PS_STATIC_MEMBER(_type, _name) inline _type& _internal_ns::ParseState::_name() {return Parser::_name();}
 	_IMPL_PS_STATIC_MEMBER(std::string, gtext);
+	_IMPL_PS_STATIC_MEMBER(std::string, gndattname);
 	_IMPL_PS_STATIC_MEMBER(Document, gdoc);
 	_IMPL_PS_STATIC_MEMBER(Node, gndbody);
 #undef _IMPL_PS_STATIC_MEMBER
